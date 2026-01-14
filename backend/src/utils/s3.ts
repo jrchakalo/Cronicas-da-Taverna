@@ -1,11 +1,22 @@
 import AWS from 'aws-sdk';
 import { S3UploadResult } from '../types';
 
+const requireEnv = (key: string): string => {
+  const value = process.env[key];
+  if (!value || !value.trim()) {
+    throw new Error(`Variável ${key} não configurada. Verifique as credenciais AWS/S3.`);
+  }
+  return value.trim();
+};
+
+const resolvedRegion = process.env.AWS_REGION || 'us-east-1';
+const resolvedBucket = process.env.AWS_S3_BUCKET || '';
+
 // Configure AWS S3
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: resolvedRegion,
 });
 
 export const uploadToS3 = (
@@ -15,7 +26,7 @@ export const uploadToS3 = (
   const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}-${file.originalname}`;
   
   const uploadParams = {
-    Bucket: process.env.AWS_S3_BUCKET || 'tech-challenge-blog-uploads',
+    Bucket: resolvedBucket || requireEnv('AWS_S3_BUCKET'),
     Key: fileName,
     Body: file.buffer,
     ContentType: file.mimetype,
@@ -35,7 +46,7 @@ export const uploadToS3 = (
 
 export const deleteFromS3 = (key: string): Promise<void> => {
   const deleteParams = {
-    Bucket: process.env.AWS_S3_BUCKET || 'tech-challenge-blog-uploads',
+    Bucket: resolvedBucket || requireEnv('AWS_S3_BUCKET'),
     Key: key,
   };
 
@@ -52,7 +63,7 @@ export const deleteFromS3 = (key: string): Promise<void> => {
 
 export const generateSignedUrl = (key: string, expiresIn: number = 3600): string => {
   return s3.getSignedUrl('getObject', {
-    Bucket: process.env.AWS_S3_BUCKET || 'tech-challenge-blog-uploads',
+    Bucket: resolvedBucket || requireEnv('AWS_S3_BUCKET'),
     Key: key,
     Expires: expiresIn,
   });

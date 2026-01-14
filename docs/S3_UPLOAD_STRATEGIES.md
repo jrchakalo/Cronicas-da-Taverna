@@ -7,6 +7,8 @@ Existem duas abordagens principais para upload de arquivos para o Amazon S3:
 1. **Upload Direto**: O arquivo é enviado do cliente para o servidor, depois o servidor envia para o S3
 2. **Presigned URLs**: O servidor gera uma URL temporária que permite ao cliente fazer upload diretamente para o S3
 
+Este guia foi mantido apenas por histórico. Para o deploy atual, consulte [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Upload Direto
 
 ### Como Funciona

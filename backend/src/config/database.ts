@@ -18,13 +18,39 @@ const readSecretFile = (filePath?: string): string | undefined => {
   }
 };
 
-const dbPassword = readSecretFile(process.env.DB_PASSWORD_FILE) || process.env.DB_PASSWORD || 'password123';
+const dbPassword =
+  readSecretFile(process.env.DB_PASSWORD_FILE) ||
+  process.env.DB_PASSWORD ||
+  (process.env.NODE_ENV === 'development' ? 'password123' : undefined);
 
 const isTestEnv = process.env.NODE_ENV === 'test';
+
+const baseOptions = {
+  logging: process.env.NODE_ENV === 'development' ? console.log : false,
+  pool: {
+    max: 10,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
+  dialectOptions: {
+    ...(process.env.NODE_ENV === 'production' && {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    }),
+  },
+};
 
 const sequelize = isTestEnv
   ? new Sequelize('sqlite::memory:', {
       logging: false,
+    })
+  : process.env.DATABASE_URL
+  ? new Sequelize(process.env.DATABASE_URL, {
+      dialect: 'postgres',
+      ...baseOptions,
     })
   : new Sequelize({
       database: process.env.DB_NAME || 'tech_challenge_blog',
@@ -33,23 +59,7 @@ const sequelize = isTestEnv
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432'),
       dialect: 'postgres',
-      logging: process.env.NODE_ENV === 'development' ? console.log : false,
-      pool: {
-        max: 10,
-        min: 0,
-        acquire: 30000,
-        idle: 10000,
-      },
-      // Intentional performance issue: missing connection pool optimization
-      dialectOptions: {
-        // Missing SSL configuration for production
-        ...(process.env.NODE_ENV === 'production' && {
-          ssl: {
-            require: true,
-            rejectUnauthorized: false
-          }
-        })
-      }
+      ...baseOptions,
     });
 
 export { sequelize };

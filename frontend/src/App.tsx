@@ -10,12 +10,8 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { HomePage } from './pages/posts/HomePage';
 import { CommentModerationPage } from './pages/moderation/CommentModerationPage';
-// import { CreatePostPage } from './pages/posts/CreatePostPage';
-// import { PostDetailPage } from './pages/posts/PostDetailPage';
-
-// Simple placeholder components para rotas ainda não implementadas
-const CreatePostPage = () => <div>Create Post Page - Coming Soon</div>;
-const PostDetailPage = () => <div>Post Detail Page - Coming Soon</div>;
+import { CreatePostPage } from './pages/posts/CreatePostPage';
+import { PostDetailPage } from './pages/posts/PostDetailPage';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;

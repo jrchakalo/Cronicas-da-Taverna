@@ -1,3 +1,7 @@
+# Documento legado
+
+Este guia foi mantido apenas por histórico. Para o deploy atual, consulte [docs/DEPLOY.md](docs/DEPLOY.md).
+
 # Docker Configuration Guide
 
 ## Overview

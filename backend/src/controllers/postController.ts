@@ -17,8 +17,11 @@ export const getPosts = async (req: AuthenticatedRequest, res: Response): Promis
       authorId,
     }: PostQuery = req.query;
 
-  const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
-  const limitNumber = Math.max(parseInt(limit, 10) || 10, 1);
+    const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNumber = Math.max(parseInt(limit, 10) || 10, 1);
+    const allowedSortFields = new Set(['createdAt', 'publishedAt', 'viewCount', 'title']);
+    const safeSortBy = allowedSortFields.has(sortBy) ? sortBy : 'createdAt';
+    const safeSortOrder = sortOrder === 'ASC' ? 'ASC' : 'DESC';
     const offset = (pageNumber - 1) * limitNumber;
 
     const whereClause: any = {
@@ -49,7 +52,7 @@ export const getPosts = async (req: AuthenticatedRequest, res: Response): Promis
       where: whereClause,
       limit: limitNumber,
       offset,
-      order: [[sortBy, sortOrder]],
+      order: [[safeSortBy, safeSortOrder]],
       subQuery: false,
       attributes: {
         include: [
@@ -74,6 +77,9 @@ export const getPosts = async (req: AuthenticatedRequest, res: Response): Promis
           as: 'comments',
           attributes: [],
           required: false,
+          where: {
+            status: 'approved',
+          },
         },
         {
           model: Like,
@@ -151,29 +157,22 @@ export const getPostById = async (req: AuthenticatedRequest, res: Response): Pro
     post.viewCount += 1;
     await post.save();
 
-    const commentsWithAuthors = await Comment.findAll({
-      where: { postId: post.id },
-      include: [
-        {
-          model: User,
-          as: 'author',
-          attributes: ['id', 'username', 'avatar'],
-        },
-      ],
-      order: [['createdAt', 'ASC']],
+    const commentCount = await Comment.count({
+      where: {
+        postId: post.id,
+        status: 'approved',
+      },
     });
-    
+
     const likeCount = await Like.count({ where: { postId: post.id } });
     const isLiked = req.user 
       ? await Like.findOne({ where: { postId: post.id, userId: req.user.id } }) !== null
       : false;
 
-    const serializedComments = commentsWithAuthors.map((comment) => comment.toJSON());
-
     res.status(200).json({
       post: {
         ...post.toJSON(),
-        comments: serializedComments,
+        commentCount,
         likeCount,
         isLiked,
       },
