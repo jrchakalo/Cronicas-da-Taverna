@@ -214,13 +214,17 @@ const formatDate = (value?: string) => {
 };
 
 const markdownComponents: Components = {
-  code({ inline, className, children, ...props }) {
+  code({ className, children, ...props }) {
     const match = /language-(\w+)/.exec(className || '');
-    return !inline && match ? (
-      <SyntaxHighlighter style={tomorrow} language={match[1]} PreTag="div">
-        {String(children).replace(/\n$/, '')}
-      </SyntaxHighlighter>
-    ) : (
+    if (match) {
+      return (
+        <SyntaxHighlighter style={tomorrow} language={match[1]} PreTag="div">
+          {String(children).replace(/\n$/, '')}
+        </SyntaxHighlighter>
+      );
+    }
+
+    return (
       <code className={className} {...props}>
         {children}
       </code>

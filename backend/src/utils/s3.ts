@@ -30,7 +30,6 @@ export const uploadToS3 = (
     Key: fileName,
     Body: file.buffer,
     ContentType: file.mimetype,
-    ACL: 'public-read',
   };
 
   return new Promise((resolve, reject) => {

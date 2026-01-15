@@ -29,7 +29,7 @@ export const validateRequest = (schema: Joi.Schema, property: RequestProperty = 
 
 // User validation schemas
 export const registerSchema = Joi.object({
-  username: Joi.string().min(3).max(50).pattern(/^[a-zA-Z0-9_-]+$/).required(),
+  username: Joi.string().min(3).max(50).pattern(/^[a-zA-Z0-9._-]+$/).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).max(255).required(),
   firstName: Joi.string().max(100).optional(),

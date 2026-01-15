@@ -84,7 +84,7 @@ User.init(
       unique: true,
       validate: {
         len: [3, 50],
-        is: /^[a-zA-Z0-9_-]+$/,
+        is: /^[a-zA-Z0-9._-]+$/,
       },
     },
     email: {
