@@ -47,6 +47,8 @@ export const Input = styled.input.withConfig({
     hasError ? theme.colors.red[500] : theme.colors.gray[300]};
   border-radius: ${({ theme }) => theme.radii.md};
   font-size: ${({ theme }) => theme.fontSizes.base};
+  background-color: ${({ theme }) => theme.colors.gray[50]};
+  color: ${({ theme }) => theme.colors.gray[800]};
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   
   &:focus {
@@ -77,6 +79,8 @@ export const TextArea = styled.textarea.withConfig({
   border-radius: ${({ theme }) => theme.radii.md};
   font-size: ${({ theme }) => theme.fontSizes.base};
   font-family: ${({ theme }) => theme.fonts.body};
+  background-color: ${({ theme }) => theme.colors.gray[50]};
+  color: ${({ theme }) => theme.colors.gray[800]};
   resize: vertical;
   min-height: 120px;
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -108,7 +112,8 @@ export const Select = styled.select.withConfig({
     hasError ? theme.colors.red[500] : theme.colors.gray[300]};
   border-radius: ${({ theme }) => theme.radii.md};
   font-size: ${({ theme }) => theme.fontSizes.base};
-  background-color: white;
+  background-color: ${({ theme }) => theme.colors.gray[50]};
+  color: ${({ theme }) => theme.colors.gray[800]};
   cursor: pointer;
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   

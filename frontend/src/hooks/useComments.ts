@@ -107,6 +107,38 @@ export const useComments = (postId: number | null) => {
     }
   };
 
+  const toggleLikeComment = async (commentId: number) => {
+    try {
+      const response = await commentService.likeComment(commentId);
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.id === commentId
+            ? { ...comment, likeCount: response.likeCount, isLiked: response.liked }
+            : {
+                ...comment,
+                replies: comment.replies?.map((reply) =>
+                  reply.id === commentId
+                    ? { ...reply, likeCount: response.likeCount, isLiked: response.liked }
+                    : reply
+                ) || [],
+              }
+        )
+      );
+      return response;
+    } catch (err: any) {
+      throw err;
+    }
+  };
+
+  const reportComment = async (commentId: number, reason?: string) => {
+    try {
+      const response = await commentService.reportComment(commentId, reason);
+      return response;
+    } catch (err: any) {
+      throw err;
+    }
+  };
+
   return {
     comments,
     loading,
@@ -115,6 +147,8 @@ export const useComments = (postId: number | null) => {
     addComment,
     updateComment,
     deleteComment,
+    toggleLikeComment,
+    reportComment,
     refreshComments,
   };
 };

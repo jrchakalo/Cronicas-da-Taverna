@@ -1,9 +1,8 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { ThemeProvider } from 'styled-components';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
-import { theme } from './styles/theme';
+import { ThemeModeProvider } from './hooks/useThemeMode';
 
 interface AllProvidersProps {
   children: React.ReactNode;
@@ -12,11 +11,14 @@ interface AllProvidersProps {
 
 const AllTheProviders = ({ children, initialEntries }: AllProvidersProps) => {
   return (
-    <ThemeProvider theme={theme}>
-      <MemoryRouter initialEntries={initialEntries}>
+    <ThemeModeProvider>
+      <MemoryRouter
+        initialEntries={initialEntries}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <AuthProvider>{children}</AuthProvider>
       </MemoryRouter>
-    </ThemeProvider>
+    </ThemeModeProvider>
   );
 };
 

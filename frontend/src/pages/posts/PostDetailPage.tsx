@@ -56,6 +56,16 @@ const Meta = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
+const AuthorLink = styled(Link)`
+  color: ${({ theme }) => theme.colors.gray[600]};
+  text-decoration: none;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary[600]};
+    text-decoration: underline;
+  }
+`;
+
 const CoverImage = styled.img`
   width: 100%;
   border-radius: ${({ theme }) => theme.radii.lg};
@@ -101,6 +111,21 @@ const ActionsRow = styled.div`
   gap: ${({ theme }) => theme.space[3]};
 `;
 
+const GhostButton = styled.button`
+  border: 1px solid ${({ theme }) => theme.colors.gray[200]};
+  border-radius: ${({ theme }) => theme.radii.full};
+  padding: 8px 16px;
+  background: ${({ theme }) => theme.colors.gray[50]};
+  color: ${({ theme }) => theme.colors.gray[700]};
+  cursor: pointer;
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.gray[100]};
+  }
+`;
+
 const LikeButton = styled.button<{ $liked?: boolean }>`
   border: none;
   border-radius: ${({ theme }) => theme.radii.full};
@@ -126,7 +151,7 @@ const CommentsSection = styled.section`
 `;
 
 const CommentCard = styled.article`
-  background: #ffffff;
+  background: ${({ theme }) => theme.colors.gray[100]};
   border-radius: ${({ theme }) => theme.radii.lg};
   padding: ${({ theme }) => theme.space[4]};
   box-shadow: ${({ theme }) => theme.shadows.sm};
@@ -149,6 +174,31 @@ const CommentContent = styled.p`
   line-height: 1.6;
 `;
 
+const CommentActions = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space[2]};
+  flex-wrap: wrap;
+`;
+
+const CommentActionButton = styled.button<{ $active?: boolean }>`
+  border: 1px solid ${({ theme }) => theme.colors.gray[200]};
+  border-radius: ${({ theme }) => theme.radii.full};
+  padding: 6px 12px;
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.primary[100] : theme.colors.gray[50]};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.primary[700] : theme.colors.gray[700]};
+  font-size: ${({ theme }) => theme.fontSizes.xs};
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+
+  &:hover {
+    background: ${({ theme, $active }) =>
+      $active ? theme.colors.primary[500] : theme.colors.gray[100]};
+    color: ${({ theme, $active }) => ($active ? '#ffffff' : theme.colors.gray[700])};
+  }
+`;
+
 const ReplyList = styled.div`
   border-left: 2px solid ${({ theme }) => theme.colors.gray[100]};
   margin-left: ${({ theme }) => theme.space[4]};
@@ -169,6 +219,7 @@ const SubmitButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: ${({ theme }) => theme.space[2]};
+  align-self: flex-start;
   transition: background-color 0.2s ease-in-out;
 
   &:hover {
@@ -243,9 +294,14 @@ export const PostDetailPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const postId = Number(id);
-  const { comments, loading: loadingComments, error: commentsError, addComment } = useComments(
-    Number.isNaN(postId) ? null : postId
-  );
+  const {
+    comments,
+    loading: loadingComments,
+    error: commentsError,
+    addComment,
+    toggleLikeComment,
+    reportComment,
+  } = useComments(Number.isNaN(postId) ? null : postId);
 
   const fetchPost = useCallback(async () => {
     if (!postId || Number.isNaN(postId)) {
@@ -327,6 +383,40 @@ export const PostDetailPage: React.FC = () => {
     }
   };
 
+  const handleReportPost = async () => {
+    if (!post?.id) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      toast.error('Faça login para denunciar um post.');
+      return;
+    }
+
+    try {
+      const response = await postService.reportPost(post.id);
+      toast.success(response.message);
+    } catch (error: any) {
+      const message = error?.response?.data?.error ?? 'Não foi possível registrar a denúncia.';
+      toast.error(message);
+    }
+  };
+
+  const handleReportComment = async (commentId: number) => {
+    if (!isAuthenticated) {
+      toast.error('Faça login para denunciar um comentário.');
+      return;
+    }
+
+    try {
+      const response = await reportComment(commentId);
+      toast.success(response.message);
+    } catch (error: any) {
+      const message = error?.response?.data?.error ?? 'Não foi possível registrar a denúncia.';
+      toast.error(message);
+    }
+  };
+
   const handleSubmitComment = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -390,16 +480,20 @@ export const PostDetailPage: React.FC = () => {
     <PageWrapper>
       <Content>
         <BackLink to="/">← Voltar ao feed</BackLink>
-
         <Header>
           <Title>{post.title}</Title>
           <Meta>
-            <span>Por {post.author?.username ?? 'Autor desconhecido'}</span>
+            {post.author?.id ? (
+              <span>
+                Por <AuthorLink to={`/autor/${post.author.id}`}>{post.author?.username ?? 'Autor desconhecido'}</AuthorLink>
+              </span>
+            ) : (
+              <span>Por {post.author?.username ?? 'Autor desconhecido'}</span>
+            )}
             {formattedDate && <span>• {formattedDate}</span>}
             <span>• {post.viewCount} visualizações</span>
           </Meta>
         </Header>
-
         {post.imageUrl && <CoverImage src={post.imageUrl} alt={post.title} />}
 
         {post.tags && post.tags.length > 0 && (
@@ -420,6 +514,9 @@ export const PostDetailPage: React.FC = () => {
           <LikeButton type="button" onClick={handleLike} $liked={post.isLiked}>
             {post.isLiked ? 'Amei' : 'Curtir'} • {post.likeCount ?? 0}
           </LikeButton>
+          <GhostButton type="button" onClick={handleReportPost}>
+            Denunciar post
+          </GhostButton>
         </ActionsRow>
 
         <CommentsSection>
@@ -468,9 +565,20 @@ export const PostDetailPage: React.FC = () => {
               <CommentMeta>
                 <span>{comment.author?.username ?? 'Usuário'}</span>
                 {formatDate(comment.createdAt) && <span>• {formatDate(comment.createdAt)}</span>}
-                <span>• {comment.status}</span>
               </CommentMeta>
               <CommentContent>{comment.content}</CommentContent>
+              <CommentActions>
+                <CommentActionButton
+                  type="button"
+                  onClick={() => toggleLikeComment(comment.id)}
+                  $active={comment.isLiked}
+                >
+                  {comment.isLiked ? 'Curtido' : 'Curtir'} • {comment.likeCount ?? 0}
+                </CommentActionButton>
+                <CommentActionButton type="button" onClick={() => handleReportComment(comment.id)}>
+                  Denunciar
+                </CommentActionButton>
+              </CommentActions>
 
               {comment.replies && comment.replies.length > 0 && (
                 <ReplyList>
@@ -481,9 +589,20 @@ export const PostDetailPage: React.FC = () => {
                         {formatDate(reply.createdAt) && (
                           <span>• {formatDate(reply.createdAt)}</span>
                         )}
-                        <span>• {reply.status}</span>
                       </CommentMeta>
                       <CommentContent>{reply.content}</CommentContent>
+                      <CommentActions>
+                        <CommentActionButton
+                          type="button"
+                          onClick={() => toggleLikeComment(reply.id)}
+                          $active={reply.isLiked}
+                        >
+                          {reply.isLiked ? 'Curtido' : 'Curtir'} • {reply.likeCount ?? 0}
+                        </CommentActionButton>
+                        <CommentActionButton type="button" onClick={() => handleReportComment(reply.id)}>
+                          Denunciar
+                        </CommentActionButton>
+                      </CommentActions>
                     </CommentCard>
                   ))}
                 </ReplyList>

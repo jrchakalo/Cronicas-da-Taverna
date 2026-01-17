@@ -15,6 +15,10 @@ Este guia publica o backend no **Render** e o frontend no **Vercel**, mantendo S
    ```
    npm install && npm run build
    ```
+4. **Pre-deploy Command** (migrations):
+   ```
+   npm run migrate
+   ```
 4. **Start Command**:
    ```
    npm run start
@@ -60,3 +64,16 @@ O upload usa S3 real. Garanta que o bucket permita leitura pública **ou** confi
 - [ ] Login/registro ok
 - [ ] Upload de imagem ok
 - [ ] Realtime ok
+- [ ] Migrations executadas (`npm run migrate`)
+
+## 6) CI/CD (GitHub Actions)
+O pipeline de CI está em [/.github/workflows/ci.yml](../.github/workflows/ci.yml) e executa:
+- Lint + testes + build do backend
+- Testes + build do frontend
+
+Checklist sugerido para deploy automatizado:
+- [ ] CI passando no `main`
+- [ ] Secrets/configs definidos no provedor (Render/Vercel)
+- [ ] Pre-deploy rodando migrations no backend
+- [ ] Healthcheck `GET /health` respondendo 200
+- [ ] Frontend apontando para `REACT_APP_API_URL` e `REACT_APP_SOCKET_URL`

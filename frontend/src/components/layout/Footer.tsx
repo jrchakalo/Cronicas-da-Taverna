@@ -1,10 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const FooterContainer = styled.footer`
   margin-top: auto;
-  background-color: ${({ theme }) => theme.colors.gray[900]};
-  color: ${({ theme }) => theme.colors.gray[300]};
+  background-color: ${({ theme }) => theme.colors.gray[100]};
+  color: ${({ theme }) => theme.colors.gray[700]};
 `;
 
 const FooterContent = styled.div`
@@ -37,12 +38,12 @@ const BrandBlock = styled.div`
 const BrandTitle = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.gray[900]};
 `;
 
 const BrandDescription = styled.span`
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.gray[400]};
+  color: ${({ theme }) => theme.colors.gray[600]};
 `;
 
 const FooterLinks = styled.nav`
@@ -51,26 +52,26 @@ const FooterLinks = styled.nav`
   gap: 16px;
 `;
 
-const FooterLink = styled.a`
-  color: ${({ theme }) => theme.colors.gray[400]};
+const FooterLink = styled(Link)`
+  color: ${({ theme }) => theme.colors.gray[600]};
   text-decoration: none;
   transition: color 0.2s ease-in-out;
 
   &:hover {
-    color: #ffffff;
+    color: ${({ theme }) => theme.colors.gray[900]};
     text-decoration: underline;
   }
 `;
 
 const FooterBottom = styled.div`
-  border-top: 1px solid ${({ theme }) => theme.colors.gray[700]};
+  border-top: 1px solid ${({ theme }) => theme.colors.gray[200]};
   padding-top: 24px;
 `;
 
 const FooterNote = styled.p`
   text-align: center;
   font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.gray[400]};
+  color: ${({ theme }) => theme.colors.gray[600]};
 `;
 
 export const Footer: React.FC = () => {
@@ -79,23 +80,23 @@ export const Footer: React.FC = () => {
       <FooterContent>
         <FooterTop>
           <BrandBlock>
-            <BrandTitle>TechBlog</BrandTitle>
+            <BrandTitle>Crônicas da Taverna</BrandTitle>
             <BrandDescription>
-              A modern blog platform for developers
+              Um blog narrativo para campanhas de RPG, diários de mesa e bastidores da aventura.
             </BrandDescription>
           </BrandBlock>
 
           <FooterLinks>
-            <FooterLink href="#about">About</FooterLink>
-            <FooterLink href="#privacy">Privacy</FooterLink>
-            <FooterLink href="#terms">Terms</FooterLink>
-            <FooterLink href="#contact">Contact</FooterLink>
+            <FooterLink to="/sobre">Sobre</FooterLink>
+            <FooterLink to="/privacidade">Privacidade</FooterLink>
+            <FooterLink to="/termos">Termos</FooterLink>
+            <FooterLink to="/contato">Contato</FooterLink>
           </FooterLinks>
         </FooterTop>
 
         <FooterBottom>
           <FooterNote>
-            © {new Date().getFullYear()} TechBlog. All rights reserved.
+            © {new Date().getFullYear()} Crônicas da Taverna. Todos os direitos reservados.
           </FooterNote>
         </FooterBottom>
       </FooterContent>

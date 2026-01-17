@@ -37,6 +37,7 @@ Preencha as variáveis (DB, JWT, S3). Depois:
 ```
 cd backend
 npm install
+npm run migrate
 npm run dev
 ```
 
@@ -65,6 +66,18 @@ npm run dev        # backend + frontend
 npm run build      # build completo
 npm run test       # testes
 ```
+
+## 🗄️ Migrations (Sequelize CLI)
+As migrations ficam em backend/migrations e são executadas com:
+
+```
+cd backend
+npm run migrate
+```
+
+## 🤖 CI/CD
+O pipeline de CI roda lint, testes e build em backend e frontend via GitHub Actions:
+- [.github/workflows/ci.yml](.github/workflows/ci.yml)
 
 ## 🌐 Deploy
 Veja o passo a passo em [docs/DEPLOY.md](docs/DEPLOY.md).

@@ -44,7 +44,9 @@ const baseOptions = {
 };
 
 const sequelize = isTestEnv
-  ? new Sequelize('sqlite::memory:', {
+  ? new Sequelize({
+      dialect: 'sqlite',
+      storage: ':memory:',
       logging: false,
     })
   : process.env.DATABASE_URL

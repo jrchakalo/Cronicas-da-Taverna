@@ -1,12 +1,12 @@
-export const theme = {
+export const lightTheme = {
   colors: {
     primary: {
-      50: '#eff6ff',
-      100: '#dbeafe',
-      500: '#3b82f6',
-      600: '#2563eb',
-      700: '#1d4ed8',
-      900: '#1e3a8a',
+      50: '#f5f3ff',
+      100: '#ede9fe',
+      500: '#8b5cf6',
+      600: '#7c3aed',
+      700: '#6d28d9',
+      900: '#4c1d95',
     },
     gray: {
       50: '#f9fafb',
@@ -126,4 +126,54 @@ export const theme = {
   },
 };
 
-export type Theme = typeof theme;
+export const darkTheme = {
+  ...lightTheme,
+  colors: {
+    ...lightTheme.colors,
+    primary: {
+      50: '#2b2140',
+      100: '#35254f',
+      500: '#a78bfa',
+      600: '#8b5cf6',
+      700: '#7c3aed',
+      900: '#5b21b6',
+    },
+    gray: {
+      50: '#0f172a',
+      100: '#111827',
+      200: '#1f2937',
+      300: '#374151',
+      400: '#4b5563',
+      500: '#6b7280',
+      600: '#9ca3af',
+      700: '#d1d5db',
+      800: '#e5e7eb',
+      900: '#f9fafb',
+    },
+    red: {
+      50: '#7f1d1d',
+      100: '#991b1b',
+      500: '#f87171',
+      600: '#ef4444',
+      700: '#dc2626',
+    },
+    green: {
+      50: '#14532d',
+      100: '#166534',
+      500: '#4ade80',
+      600: '#22c55e',
+      700: '#16a34a',
+    },
+    yellow: {
+      50: '#78350f',
+      100: '#92400e',
+      500: '#fbbf24',
+      600: '#f59e0b',
+      700: '#d97706',
+    },
+  },
+};
+
+export const theme = lightTheme;
+
+export type Theme = typeof lightTheme;

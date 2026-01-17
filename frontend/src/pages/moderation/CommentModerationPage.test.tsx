@@ -21,6 +21,7 @@ jest.mock('../../hooks/useAuth', () => ({
 jest.mock('../../services/commentService', () => ({
   commentService: {
     getModerationQueue: jest.fn(),
+    getReportedComments: jest.fn(),
     approveComment: jest.fn(),
     rejectComment: jest.fn(),
     flagComment: jest.fn(),
@@ -48,6 +49,7 @@ describe('Proteção da rota de moderação', () => {
       hasPrevPage: false,
     },
   };
+  const emptyReports = { reports: [] };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -55,6 +57,7 @@ describe('Proteção da rota de moderação', () => {
     mockAuthState.isAuthenticated = false;
     mockAuthState.isLoading = false;
     mockedCommentService.getModerationQueue.mockResolvedValue(emptyQueue);
+    mockedCommentService.getReportedComments.mockResolvedValue(emptyReports);
   });
 
   it('exibe o painel quando o usuário é moderador', async () => {
@@ -74,6 +77,9 @@ describe('Proteção da rota de moderação', () => {
     expect(
       await screen.findByRole('heading', { name: /moderação de comentários/i })
     ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockedCommentService.getModerationQueue).toHaveBeenCalled();
+    });
     expect(mockedCommentService.getModerationQueue).toHaveBeenCalledWith({ status: ['pending', 'flagged'] });
   });
 

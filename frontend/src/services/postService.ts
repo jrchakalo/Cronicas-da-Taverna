@@ -3,7 +3,8 @@ import {
   Post, 
   PostsResponse, 
   CreatePostRequest, 
-  UpdatePostRequest 
+  UpdatePostRequest,
+  ReportedPostsResponse
 } from '../types';
 
 export interface PostQuery {
@@ -53,6 +54,38 @@ export const postService = {
 
   async likePost(id: number): Promise<{ message: string; liked: boolean }> {
     const response = await api.post<{ message: string; liked: boolean }>(`/posts/${id}/like`);
+    return response.data;
+  },
+
+  async reportPost(id: number, reason?: string | null): Promise<{ message: string; reportCount: number }> {
+    const response = await api.post<{ message: string; reportCount: number }>(
+      `/posts/${id}/report`,
+      { reason: reason ?? null }
+    );
+    return response.data;
+  },
+
+  async getReportedPosts(): Promise<ReportedPostsResponse> {
+    const response = await api.get<ReportedPostsResponse>('/posts/moderation/reports');
+    return response.data;
+  },
+
+  async getFollowingPosts(query: PostQuery = {}): Promise<PostsResponse> {
+    const params = new URLSearchParams();
+
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined) {
+        params.append(key, value.toString());
+      }
+    });
+
+    const queryString = params.toString();
+    const response = await api.get<PostsResponse>(`/posts/following${queryString ? `?${queryString}` : ''}`);
+    return response.data;
+  },
+
+  async hidePost(id: number): Promise<{ message: string; post: Post }> {
+    const response = await api.post<{ message: string; post: Post }>(`/posts/${id}/hide`);
     return response.data;
   },
 };

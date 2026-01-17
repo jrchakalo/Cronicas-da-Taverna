@@ -98,7 +98,7 @@ const GhostButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.gray[200]};
   border-radius: ${({ theme }) => theme.radii.md};
   padding: 10px 16px;
-  background: #ffffff;
+  background: ${({ theme }) => theme.colors.gray[50]};
   color: ${({ theme }) => theme.colors.gray[700]};
   font-size: ${({ theme }) => theme.fontSizes.sm};
   cursor: pointer;
@@ -125,7 +125,6 @@ export const CreatePostPage: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
     reset,
   } = useForm<CreatePostForm>();
 

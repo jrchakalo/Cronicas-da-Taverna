@@ -18,7 +18,7 @@ const PageContainer = styled.section`
 const Card = styled.div`
   width: 100%;
   max-width: 400px;
-  background-color: #ffffff;
+  background-color: ${({ theme }) => theme.colors.gray[100]};
   border-radius: ${({ theme }) => theme.radii.lg};
   padding: 32px;
   box-shadow: ${({ theme }) => theme.shadows.md};
@@ -39,6 +39,7 @@ const SubmitButton = styled.button<{ $isLoading?: boolean }>`
   width: 100%;
   padding: 12px 16px;
   border-radius: ${({ theme }) => theme.radii.md};
+  margin-top: ${({ theme }) => theme.space[4]};
   border: none;
   background-color: ${({ theme }) => theme.colors.primary[600]};
   color: #ffffff;
@@ -74,6 +75,13 @@ const FooterText = styled.p`
   }
 `;
 
+const StyledLabel = styled(Label)`
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.gray[800]};
+  margin-bottom: 0;
+  margin-top: ${({ theme }) => theme.space[3]};
+`;
+
 export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -92,7 +100,7 @@ export const LoginPage: React.FC = () => {
     try {
       await login(data.email, data.password);
       setStatus({ type: 'success', message: 'Login realizado com sucesso. Redirecionando...' });
-      toast.success('Logged in successfully!');
+      toast.success('Login realizado com sucesso!');
       navigate('/');
     } catch (error: any) {
       const message = error.response?.data?.error || 'Não foi possível entrar, tente novamente com outras credenciais.';
@@ -106,7 +114,7 @@ export const LoginPage: React.FC = () => {
   return (
     <PageContainer>
       <Card>
-        <Title>Welcome Back</Title>
+        <Title>Bem vindo de volta!</Title>
 
         {status && (
           <FormStatus $variant={status.type} role={status.type === 'error' ? 'alert' : 'status'}>
@@ -116,19 +124,19 @@ export const LoginPage: React.FC = () => {
         
         <Form onSubmit={handleSubmit(onSubmit)} noValidate>
           <FormGroup>
-            <Label htmlFor="email">Email</Label>
+            <StyledLabel htmlFor="email">Email</StyledLabel>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Digite seu email"
               hasError={!!errors.email}
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? 'email-error' : undefined}
               {...register('email', {
-                required: 'Email is required',
+                required: 'O email é obrigatório',
                 pattern: {
                   value: /^\S+@\S+$/i,
-                  message: 'Invalid email address',
+                  message: 'Digite um email válido',
                 },
               })}
             />
@@ -136,19 +144,19 @@ export const LoginPage: React.FC = () => {
           </FormGroup>
           
           <FormGroup>
-            <Label htmlFor="password">Password</Label>
+            <StyledLabel htmlFor="password">Senha</StyledLabel>
             <Input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="Digite sua senha"
               hasError={!!errors.password}
               aria-invalid={!!errors.password}
               aria-describedby={errors.password ? 'password-error' : undefined}
               {...register('password', {
-                required: 'Password is required',
+                required: 'A senha é obrigatória',
                 minLength: {
                   value: 6,
-                  message: 'Password must be at least 6 characters',
+                  message: 'A senha deve ter pelo menos 6 caracteres',
                 },
               })}
             />
@@ -157,14 +165,14 @@ export const LoginPage: React.FC = () => {
           
           <SubmitButton type="submit" disabled={isLoading} $isLoading={isLoading}>
             {isLoading && <Spinner aria-hidden="true" />}
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Entrando...' : 'Entrar'}
           </SubmitButton>
         </Form>
         
         <FooterText>
-          Don't have an account?{' '}
+          Não tem uma conta?{' '}
           <Link to="/register">
-            Sign up here
+            Cadastre-se aqui
           </Link>
         </FooterText>
       </Card>
