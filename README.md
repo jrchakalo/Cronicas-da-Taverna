@@ -1,10 +1,8 @@
-# Tech Blog (Fullstack)
+<div align="center">
+  <img align="center" alt="Crônicas da Taverna Logo" height="500" width="500" src="./frontend/public/cotlogo.png" />
+</div>
 
 Blog fullstack com autenticação, posts em markdown, comentários com moderação, likes e atualizações em tempo real. Backend em Node.js/Express + PostgreSQL + Socket.IO + S3, frontend em React.
-
-## ✨ Demo
-- Frontend (Vercel): **link aqui**
-- Backend (Render): **link aqui**
 
 ## ✅ Funcionalidades
 - Autenticação JWT (login/registro)
@@ -79,15 +77,5 @@ npm run migrate
 O pipeline de CI roda lint, testes e build em backend e frontend via GitHub Actions:
 - [.github/workflows/ci.yml](.github/workflows/ci.yml)
 
-## 🌐 Deploy
-Veja o passo a passo em [docs/DEPLOY.md](docs/DEPLOY.md).
-
-## 🧩 Próximos passos (ideias)
-- Editor rich text com preview ao vivo
-- Página de perfil do autor
-- Permissões granulares para moderação
-
----
-
-Feito para portfólio por **Seu Nome**.
-```
+## Autor
+[<img src="https://avatars.githubusercontent.com/jrchakalo?v=4" width=115><br><sub>Júnior Silva</sub>](https://github.com/jrchakalo)
