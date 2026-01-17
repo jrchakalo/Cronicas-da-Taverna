@@ -18,6 +18,7 @@ interface UserAttributes {
   firstName?: string;
   lastName?: string;
   avatar?: string;
+  bio?: string;
   isActive: boolean;
   role: 'user' | 'moderator' | 'admin';
   lastLogin?: Date;
@@ -37,6 +38,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public firstName?: string;
   public lastName?: string;
   public avatar?: string;
+  public bio?: string;
   public isActive!: boolean;
   public role!: 'user' | 'moderator' | 'admin';
   public lastLogin?: Date;
@@ -84,7 +86,7 @@ User.init(
       unique: true,
       validate: {
         len: [3, 50],
-        is: /^[a-zA-Z0-9_-]+$/,
+        is: /^[a-zA-Z0-9._-]+$/,
       },
     },
     email: {
@@ -111,6 +113,10 @@ User.init(
       allowNull: true,
     },
     avatar: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    bio: {
       type: DataTypes.TEXT,
       allowNull: true,
     },

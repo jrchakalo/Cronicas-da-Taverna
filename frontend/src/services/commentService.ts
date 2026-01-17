@@ -1,5 +1,6 @@
 import api from './api';
 import { Comment, CommentsResponse, CreateCommentRequest } from '../types';
+import { ReportedCommentsResponse } from '../types';
 
 type CommentStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
 
@@ -80,6 +81,26 @@ export const commentService = {
     const response = await api.post<CommentModerationResponse>(`/comments/${id}/flag`, {
       reason: reason ?? null,
     });
+    return response.data;
+  },
+
+  async likeComment(id: number): Promise<{ message: string; liked: boolean; likeCount: number }> {
+    const response = await api.post<{ message: string; liked: boolean; likeCount: number }>(
+      `/comments/${id}/like`
+    );
+    return response.data;
+  },
+
+  async reportComment(id: number, reason?: string | null): Promise<{ message: string; reportCount: number }> {
+    const response = await api.post<{ message: string; reportCount: number }>(
+      `/comments/${id}/flag`,
+      { reason: reason ?? null }
+    );
+    return response.data;
+  },
+
+  async getReportedComments(): Promise<ReportedCommentsResponse> {
+    const response = await api.get<ReportedCommentsResponse>('/comments/moderation/reports');
     return response.data;
   },
 };

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import express from 'express';
 import request from 'supertest';
-import { Comment, Post, User } from '../models';
+import { Comment, CommentReport, Post, User } from '../models';
 import commentsRouter from '../routes/comments';
 import { generateToken } from '../utils/jwt';
 
@@ -68,6 +68,7 @@ const createComment = async (
 
 describe('Comment moderation flow', () => {
   beforeEach(async () => {
+    await CommentReport.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true });
     await Comment.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true });
     await Post.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true });
     await User.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true });
@@ -113,9 +114,14 @@ describe('Comment moderation flow', () => {
 
   it('should flag a comment for review', async () => {
     const reporter = await createUser();
+    const reporter2 = await createUser();
+    const reporter3 = await createUser();
     const author = await createUser();
     const post = await createPost(author.id);
     const comment = await createComment({ postId: post.id, authorId: author.id, status: 'approved' });
+
+    await CommentReport.create({ userId: reporter2.id, commentId: comment.id, reason: 'spam' });
+    await CommentReport.create({ userId: reporter3.id, commentId: comment.id, reason: 'abuso' });
 
     const token = generateToken({
       id: reporter.id,
@@ -176,5 +182,34 @@ describe('Comment moderation flow', () => {
     expect(response.body.comment.status).toBe('approved');
     expect(response.body.comment.moderatedBy).toBe(moderator.id);
     expect(response.body.comment.moderationNotes).toBe('Legitimate content');
+  });
+
+  it('should return reported comments with counts for moderators', async () => {
+    const moderator = await createUser({ role: 'moderator' });
+    const author = await createUser();
+    const reporter1 = await createUser();
+    const reporter2 = await createUser();
+    const post = await createPost(author.id);
+    const comment = await createComment({ postId: post.id, authorId: author.id, status: 'approved' });
+
+    await CommentReport.create({ userId: reporter1.id, commentId: comment.id, reason: 'spam' });
+    await CommentReport.create({ userId: reporter2.id, commentId: comment.id, reason: 'abuso' });
+
+    const token = generateToken({
+      id: moderator.id,
+      email: moderator.email,
+      username: moderator.username,
+      role: moderator.role,
+    });
+
+    const app = buildApp();
+    const response = await request(app)
+      .get('/comments/moderation/reports')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.reports).toHaveLength(1);
+    expect(Number(response.body.reports[0].reportCount)).toBe(2);
+    expect(response.body.reports[0].comment.id).toBe(comment.id);
   });
 });

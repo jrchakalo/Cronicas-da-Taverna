@@ -19,13 +19,21 @@ const PageContainer = styled.section`
 const Card = styled.div`
   width: 100%;
   max-width: 440px;
-  background-color: #ffffff;
+  background-color: ${({ theme }) => theme.colors.gray[100]};
   border-radius: ${({ theme }) => theme.radii.lg};
   padding: 32px;
   box-shadow: ${({ theme }) => theme.shadows.md};
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
+`;
+
+const RegisterForm = styled(Form)`
+  gap: ${({ theme }) => theme.space[5]};
+`;
+
+const RegisterFormGroup = styled(FormGroup)`
+  gap: ${({ theme }) => theme.space[3]};
 `;
 
 const Title = styled.h1`
@@ -43,8 +51,16 @@ const Subtitle = styled.p`
   color: ${({ theme }) => theme.colors.gray[600]};
 `;
 
+const StyledLabel = styled(Label)`
+  font-weight: ${({ theme }) => theme.fontWeights.medium};
+  color: ${({ theme }) => theme.colors.gray[800]};
+  margin-bottom: 0;
+  margin-top: ${({ theme }) => theme.space[3]};
+`;
+
 const SubmitButton = styled.button<{ $isLoading?: boolean }>`
   width: 100%;
+  margin-top: ${({ theme }) => theme.space[4]};
   padding: 12px 16px;
   border-radius: ${({ theme }) => theme.radii.md};
   border: none;
@@ -143,9 +159,9 @@ export const RegisterPage: React.FC = () => {
           </FormStatus>
         )}
 
-        <Form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <FormGroup>
-            <Label htmlFor="firstName">Nome</Label>
+        <RegisterForm onSubmit={handleSubmit(onSubmit)} noValidate>
+          <RegisterFormGroup>
+            <StyledLabel htmlFor="firstName">Nome</StyledLabel>
             <Input
               id="firstName"
               type="text"
@@ -158,10 +174,10 @@ export const RegisterPage: React.FC = () => {
               })}
             />
             {errors.firstName && <ErrorText>{errors.firstName.message}</ErrorText>}
-          </FormGroup>
+          </RegisterFormGroup>
 
-          <FormGroup>
-            <Label htmlFor="lastName">Sobrenome</Label>
+          <RegisterFormGroup>
+            <StyledLabel htmlFor="lastName">Sobrenome</StyledLabel>
             <Input
               id="lastName"
               type="text"
@@ -174,10 +190,10 @@ export const RegisterPage: React.FC = () => {
               })}
             />
             {errors.lastName && <ErrorText>{errors.lastName.message}</ErrorText>}
-          </FormGroup>
+          </RegisterFormGroup>
 
-          <FormGroup>
-            <Label htmlFor="username">Nome de usuário</Label>
+          <RegisterFormGroup>
+            <StyledLabel htmlFor="username">Nome de usuário</StyledLabel>
             <Input
               id="username"
               type="text"
@@ -204,10 +220,10 @@ export const RegisterPage: React.FC = () => {
             {errors.username && (
               <ErrorText id="username-error">{errors.username.message}</ErrorText>
             )}
-          </FormGroup>
+          </RegisterFormGroup>
 
-          <FormGroup>
-            <Label htmlFor="email">Email</Label>
+          <RegisterFormGroup>
+            <StyledLabel htmlFor="email">Email</StyledLabel>
             <Input
               id="email"
               type="email"
@@ -224,10 +240,10 @@ export const RegisterPage: React.FC = () => {
               })}
             />
             {errors.email && <ErrorText id="email-error">{errors.email.message}</ErrorText>}
-          </FormGroup>
+          </RegisterFormGroup>
 
-          <FormGroup>
-            <Label htmlFor="password">Senha</Label>
+          <RegisterFormGroup>
+            <StyledLabel htmlFor="password">Senha</StyledLabel>
             <Input
               id="password"
               type="password"
@@ -244,10 +260,10 @@ export const RegisterPage: React.FC = () => {
               })}
             />
             {errors.password && <ErrorText id="password-error">{errors.password.message}</ErrorText>}
-          </FormGroup>
+          </RegisterFormGroup>
 
-          <FormGroup>
-            <Label htmlFor="confirmPassword">Confirme a senha</Label>
+          <RegisterFormGroup>
+            <StyledLabel htmlFor="confirmPassword">Confirme a senha</StyledLabel>
             <Input
               id="confirmPassword"
               type="password"
@@ -264,13 +280,13 @@ export const RegisterPage: React.FC = () => {
             {errors.confirmPassword && (
               <ErrorText id="confirmPassword-error">{errors.confirmPassword.message}</ErrorText>
             )}
-          </FormGroup>
+          </RegisterFormGroup>
 
           <SubmitButton type="submit" disabled={isSubmitting} $isLoading={isSubmitting}>
             {isSubmitting && <Spinner aria-hidden="true" />}
             {isSubmitting ? 'Enviando...' : 'Criar conta'}
           </SubmitButton>
-        </Form>
+        </RegisterForm>
 
         <FooterText>
           Já tem uma conta?{' '}

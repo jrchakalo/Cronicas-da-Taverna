@@ -11,6 +11,9 @@ import authRoutes from './routes/auth';
 import postRoutes from './routes/posts';
 import commentRoutes from './routes/comments';
 import uploadRoutes from './routes/upload';
+import userRoutes from './routes/users';
+import followRoutes from './routes/follows';
+import notificationRoutes from './routes/notifications';
 import { corsOptions } from './config/cors';
 import { initSocket } from './realtime/socket';
 
@@ -47,6 +50,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/follows', followRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error handling middleware
 app.use(notFoundHandler);
@@ -59,7 +65,7 @@ const startServer = async () => {
     console.log('✅ Database connection established successfully');
     
     if (process.env.NODE_ENV !== 'production') {
-      await sequelize.sync({ force: false });
+      await sequelize.sync({ alter: true });
       console.log('📊 Database synchronized');
     }
 

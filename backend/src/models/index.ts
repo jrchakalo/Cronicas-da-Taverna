@@ -3,6 +3,11 @@ import User from './User';
 import Post from './Post';
 import Comment from './Comment';
 import Like from './Like';
+import Follow from './Follow';
+import Notification from './Notification';
+import CommentLike from './CommentLike';
+import CommentReport from './CommentReport';
+import PostReport from './PostReport';
 
 // User associations
 User.hasMany(Post, {
@@ -30,6 +35,36 @@ User.hasMany(Like, {
   as: 'likes',
 });
 
+User.hasMany(Follow, {
+  foreignKey: 'followerId',
+  as: 'following',
+});
+
+User.hasMany(Follow, {
+  foreignKey: 'followingId',
+  as: 'followers',
+});
+
+User.hasMany(Notification, {
+  foreignKey: 'userId',
+  as: 'notifications',
+});
+
+User.hasMany(CommentLike, {
+  foreignKey: 'userId',
+  as: 'commentLikes',
+});
+
+User.hasMany(CommentReport, {
+  foreignKey: 'userId',
+  as: 'commentReports',
+});
+
+User.hasMany(PostReport, {
+  foreignKey: 'userId',
+  as: 'postReports',
+});
+
 // Post associations
 Post.belongsTo(User, {
   foreignKey: 'authorId',
@@ -44,6 +79,11 @@ Post.hasMany(Comment, {
 Post.hasMany(Like, {
   foreignKey: 'postId',
   as: 'likes',
+});
+
+Post.hasMany(PostReport, {
+  foreignKey: 'postId',
+  as: 'reports',
 });
 
 // Comment associations
@@ -67,6 +107,16 @@ Comment.hasMany(Comment, {
   as: 'replies',
 });
 
+Comment.hasMany(CommentLike, {
+  foreignKey: 'commentId',
+  as: 'likes',
+});
+
+Comment.hasMany(CommentReport, {
+  foreignKey: 'commentId',
+  as: 'reports',
+});
+
 Comment.belongsTo(User, {
   foreignKey: 'moderatedBy',
   as: 'moderator',
@@ -88,12 +138,62 @@ Like.belongsTo(Post, {
   as: 'post',
 });
 
+CommentLike.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
+});
+
+CommentLike.belongsTo(Comment, {
+  foreignKey: 'commentId',
+  as: 'comment',
+});
+
+CommentReport.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
+});
+
+CommentReport.belongsTo(Comment, {
+  foreignKey: 'commentId',
+  as: 'comment',
+});
+
+PostReport.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
+});
+
+PostReport.belongsTo(Post, {
+  foreignKey: 'postId',
+  as: 'post',
+});
+
+Follow.belongsTo(User, {
+  foreignKey: 'followerId',
+  as: 'follower',
+});
+
+Follow.belongsTo(User, {
+  foreignKey: 'followingId',
+  as: 'following',
+});
+
+Notification.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
+});
+
 export {
   sequelize,
   User,
   Post,
   Comment,
   Like,
+  Follow,
+  Notification,
+  CommentLike,
+  CommentReport,
+  PostReport,
 };
 
 export default {
@@ -102,4 +202,9 @@ export default {
   Post,
   Comment,
   Like,
+  Follow,
+  Notification,
+  CommentLike,
+  CommentReport,
+  PostReport,
 };

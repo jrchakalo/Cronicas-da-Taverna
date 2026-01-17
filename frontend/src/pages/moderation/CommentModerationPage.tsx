@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-import { Comment, PaginationMeta } from '../../types';
+import { Comment, PaginationMeta, ReportedCommentEntry } from '../../types';
 import { commentService } from '../../services/commentService';
 import { Spinner, TextArea } from '../../components/forms';
 import {
@@ -39,6 +39,13 @@ const Title = styled.h1`
   color: ${({ theme }) => theme.colors.gray[900]};
 `;
 
+const SectionTitle = styled.h2`
+  margin: 0;
+  font-size: ${({ theme }) => theme.fontSizes.xl};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.gray[900]};
+`;
+
 const Subtitle = styled.p`
   margin: 0;
   color: ${({ theme }) => theme.colors.gray[600]};
@@ -56,7 +63,7 @@ const FilterButton = styled.button<{ $active?: boolean }>`
     ${({ theme, $active }) =>
       $active ? theme.colors.primary[500] : theme.colors.gray[200]};
   background: ${({ theme, $active }) =>
-    $active ? theme.colors.primary[50] : '#ffffff'};
+    $active ? theme.colors.primary[50] : theme.colors.gray[50]};
   color: ${({ theme, $active }) =>
     $active ? theme.colors.primary[700] : theme.colors.gray[600]};
   border-radius: ${({ theme }) => theme.radii.full};
@@ -78,7 +85,7 @@ const CardsGrid = styled.div`
 `;
 
 const Card = styled.article`
-  background: #ffffff;
+  background: ${({ theme }) => theme.colors.gray[100]};
   border-radius: ${({ theme }) => theme.radii.lg};
   padding: ${({ theme }) => theme.space[5]};
   box-shadow: ${({ theme }) => theme.shadows.sm};
@@ -211,7 +218,7 @@ const PaginationRow = styled.div`
 const PaginationButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.gray[200]};
   border-radius: ${({ theme }) => theme.radii.md};
-  background: #ffffff;
+  background: ${({ theme }) => theme.colors.gray[50]};
   padding: 8px 14px;
   font-size: ${({ theme }) => theme.fontSizes.sm};
   cursor: pointer;
@@ -261,6 +268,7 @@ const formatDate = (value?: string | null) => {
 export const CommentModerationPage: React.FC = () => {
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
+  const [reportedComments, setReportedComments] = useState<ReportedCommentEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
@@ -294,9 +302,23 @@ export const CommentModerationPage: React.FC = () => {
     [filters]
   );
 
+  const fetchReportedComments = useCallback(async () => {
+    try {
+      const response = await commentService.getReportedComments();
+      setReportedComments(response.reports ?? []);
+    } catch (err: any) {
+      const message = err?.response?.data?.error ?? 'Não foi possível carregar as denúncias.';
+      toast.error(message);
+    }
+  }, []);
+
   useEffect(() => {
     fetchQueue();
   }, [fetchQueue]);
+
+  useEffect(() => {
+    fetchReportedComments();
+  }, [fetchReportedComments]);
 
   useEffect(() => {
     if (!user) {
@@ -398,6 +420,25 @@ export const CommentModerationPage: React.FC = () => {
     [notesByComment, upsertComment]
   );
 
+  const handleReportedAction = async (commentId: number, action: 'approve' | 'reject') => {
+    await moderateComment(commentId, action);
+    setReportedComments((current) => current.filter((item) => item.commentId !== commentId));
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    setProcessingId(commentId);
+    try {
+      await commentService.deleteComment(commentId);
+      setReportedComments((current) => current.filter((item) => item.commentId !== commentId));
+      toast.success('Comentário removido.');
+    } catch (err: any) {
+      const message = err?.response?.data?.error ?? 'Não foi possível remover o comentário.';
+      toast.error(message);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const handleNextPage = async () => {
     if (!pagination?.hasNextPage) {
       return;
@@ -465,6 +506,65 @@ export const CommentModerationPage: React.FC = () => {
             ))}
           </FiltersBar>
         </Header>
+
+        <SectionTitle>Denúncias recentes</SectionTitle>
+
+        {reportedComments.length === 0 && (
+          <EmptyState>Nenhuma denúncia de comentário no momento.</EmptyState>
+        )}
+
+        {reportedComments.length > 0 && (
+          <CardsGrid>
+            {reportedComments.map((entry) => (
+              <Card key={entry.commentId}>
+                <CardHeader>
+                  <CardTitle>
+                    {entry.comment.post ? (
+                      <Link to={`/post/${entry.comment.post.id}`}>{entry.comment.post.title}</Link>
+                    ) : (
+                      'Comentário denunciado'
+                    )}
+                  </CardTitle>
+                  <CardMeta>
+                    <span>Autor: {entry.comment.author?.username ?? 'Desconhecido'}</span>
+                    <span>•</span>
+                    <span>{entry.reportCount} denúncia(s)</span>
+                    <span>•</span>
+                    <StatusBadge $status={entry.comment.status}>{entry.comment.status}</StatusBadge>
+                  </CardMeta>
+                </CardHeader>
+                <CardBody>
+                  <CommentContent>{entry.comment.content}</CommentContent>
+                </CardBody>
+                <ActionsRow>
+                  <ActionButton
+                    type="button"
+                    onClick={() => handleReportedAction(entry.commentId, 'approve')}
+                    disabled={processingId === entry.commentId}
+                  >
+                    {processingId === entry.commentId ? <Spinner aria-hidden="true" /> : 'Aprovar'}
+                  </ActionButton>
+                  <ActionButton
+                    type="button"
+                    $variant="reject"
+                    onClick={() => handleReportedAction(entry.commentId, 'reject')}
+                    disabled={processingId === entry.commentId}
+                  >
+                    {processingId === entry.commentId ? <Spinner aria-hidden="true" /> : 'Rejeitar'}
+                  </ActionButton>
+                  <ActionButton
+                    type="button"
+                    $variant="reject"
+                    onClick={() => handleDeleteComment(entry.commentId)}
+                    disabled={processingId === entry.commentId}
+                  >
+                    {processingId === entry.commentId ? <Spinner aria-hidden="true" /> : 'Excluir comentário'}
+                  </ActionButton>
+                </ActionsRow>
+              </Card>
+            ))}
+          </CardsGrid>
+        )}
 
         {loading && (
           <LoadingState>

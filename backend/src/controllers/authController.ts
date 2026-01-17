@@ -156,12 +156,22 @@ export const updateProfile = async (
       return;
     }
 
-    const { firstName, lastName, avatar } = req.body;
+    const { firstName, lastName, avatar, username, bio } = req.body;
+
+    if (username && username !== user.username) {
+      const existingUser = await User.findOne({ where: { username } });
+      if (existingUser) {
+        res.status(409).json({ error: "Username already in use" });
+        return;
+      }
+    }
 
     await user.update({
       firstName,
       lastName,
       avatar,
+      username,
+      bio,
     });
 
     res.status(200).json({

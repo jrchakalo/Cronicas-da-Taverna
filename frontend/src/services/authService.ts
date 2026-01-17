@@ -1,5 +1,5 @@
 import api from './api';
-import { LoginRequest, RegisterRequest, AuthResponse, User } from '../types';
+import { LoginRequest, RegisterRequest, AuthResponse, User, ChangePasswordRequest } from '../types';
 
 export const authService = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
@@ -19,6 +19,11 @@ export const authService = {
 
   async updateProfile(userData: Partial<User>): Promise<{ message: string; user: User }> {
     const response = await api.put<{ message: string; user: User }>('/auth/profile', userData);
+    return response.data;
+  },
+
+  async changePassword(payload: ChangePasswordRequest): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>('/auth/change-password', payload);
     return response.data;
   },
 

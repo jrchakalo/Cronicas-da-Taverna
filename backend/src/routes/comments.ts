@@ -7,6 +7,8 @@ import {
   approveComment,
   rejectComment,
   flagComment,
+  toggleCommentLike,
+  getReportedComments,
   getModerationQueue,
 } from '../controllers/commentController';
 import { authenticateToken, authorizeRoles, optionalAuth } from '../middleware/auth';
@@ -17,7 +19,7 @@ import {
   idParamSchema, 
   updateCommentSchema,
   moderationActionSchema,
-  flagCommentSchema,
+  reportSchema,
   moderationQueueQuerySchema,
   commentListQuerySchema,
 } from '../middleware/validation';
@@ -41,8 +43,15 @@ router.post(
   '/:id/flag',
   authenticateToken,
   validateRequest(idParamSchema, 'params'),
-  validateRequest(flagCommentSchema),
+  validateRequest(reportSchema),
   flagComment
+);
+
+router.post(
+  '/:id/like',
+  authenticateToken,
+  validateRequest(idParamSchema, 'params'),
+  toggleCommentLike
 );
 
 // Moderation routes
@@ -52,6 +61,13 @@ router.get(
   authorizeRoles('moderator', 'admin'),
   validateRequest(moderationQueueQuerySchema, 'query'),
   getModerationQueue
+);
+
+router.get(
+  '/moderation/reports',
+  authenticateToken,
+  authorizeRoles('moderator', 'admin'),
+  getReportedComments
 );
 
 router.post(

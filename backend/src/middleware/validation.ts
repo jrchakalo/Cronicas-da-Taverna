@@ -29,7 +29,7 @@ export const validateRequest = (schema: Joi.Schema, property: RequestProperty = 
 
 // User validation schemas
 export const registerSchema = Joi.object({
-  username: Joi.string().min(3).max(50).pattern(/^[a-zA-Z0-9_-]+$/).required(),
+  username: Joi.string().min(3).max(50).pattern(/^[a-zA-Z0-9._-]+$/).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).max(255).required(),
   firstName: Joi.string().max(100).optional(),
@@ -126,6 +126,10 @@ export const flagCommentSchema = Joi.object({
   reason: moderationReasonField,
 });
 
+export const reportSchema = Joi.object({
+  reason: moderationReasonField,
+});
+
 const moderationStatus = Joi.string().valid('pending', 'approved', 'rejected', 'flagged');
 
 export const commentListQuerySchema = Joi.object({
@@ -141,9 +145,11 @@ export const moderationQueueQuerySchema = Joi.object({
 });
 
 export const updateProfileSchema = Joi.object({
+  username: Joi.string().min(3).max(50).pattern(/^[a-zA-Z0-9._-]+$/).optional(),
   firstName: Joi.string().max(100).optional(),
   lastName: Joi.string().max(100).optional(),
   avatar: Joi.string().uri().optional(),
+  bio: Joi.string().max(500).allow('').optional(),
 }).min(1).messages({
   'object.min': 'Escolha pelo menos um campo para atualizar seu perfil',
 });

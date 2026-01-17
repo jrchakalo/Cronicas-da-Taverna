@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { Op, Order } from 'sequelize';
-import { Comment, Post, User } from '../models';
+import { Comment, Post, User, CommentLike, CommentReport } from '../models';
 import {
   AuthenticatedRequest,
   CreateCommentRequest,
@@ -8,10 +8,13 @@ import {
   ModerationActionRequest,
 } from '../types';
 import { getIO } from '../realtime/socket';
+import { createNotification, notifyModerators } from '../utils/notifications';
+import { sequelize } from '../config/database';
 
 type CommentStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
 
 const COMMENT_STATUSES: CommentStatus[] = ['pending', 'approved', 'rejected', 'flagged'];
+const REPORT_THRESHOLD = 3;
 
 const isModerator = (req: AuthenticatedRequest): boolean =>
   !!req.user && (req.user.role === 'moderator' || req.user.role === 'admin');
@@ -87,6 +90,22 @@ const getPaginationMeta = (totalItems: number, page: number, limit: number) => {
   };
 };
 
+const attachCommentMeta = (
+  comment: any,
+  likeMap: Map<number, number>,
+  likedSet: Set<number>
+) => {
+  const json = comment.toJSON ? comment.toJSON() : comment;
+  json.likeCount = likeMap.get(json.id) ?? 0;
+  json.isLiked = likedSet.has(json.id);
+  if (json.replies && Array.isArray(json.replies)) {
+    json.replies = json.replies.map((reply: any) =>
+      attachCommentMeta(reply, likeMap, likedSet)
+    );
+  }
+  return json;
+};
+
 export const getComments = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { postId } = req.params;
@@ -123,7 +142,7 @@ export const getComments = async (req: AuthenticatedRequest, res: Response): Pro
 
     const fallbackStatuses: CommentStatus[] = moderatorView
       ? ['approved', 'pending', 'flagged']
-      : ['approved'];
+      : ['approved', 'flagged'];
     const statusesToUse = sanitizedStatuses.length ? sanitizedStatuses : fallbackStatuses;
     const statusCondition = buildStatusCondition(statusesToUse);
 
@@ -143,8 +162,44 @@ export const getComments = async (req: AuthenticatedRequest, res: Response): Pro
       ] as any,
     });
 
+    const flattenIds = (items: any[]): number[] => {
+      const ids: number[] = [];
+      items.forEach((item) => {
+        ids.push(item.id);
+        if (item.replies) {
+          ids.push(...flattenIds(item.replies));
+        }
+      });
+      return ids;
+    };
+
+    const commentIds = flattenIds(comments.rows);
+    const likeCounts = await CommentLike.findAll({
+      attributes: ['commentId', [sequelize.fn('COUNT', sequelize.col('id')), 'likeCount']],
+      where: { commentId: commentIds },
+      group: ['commentId'],
+    });
+
+    const likeMap = new Map<number, number>();
+    likeCounts.forEach((row: any) => {
+      likeMap.set(Number(row.get('commentId')), Number(row.get('likeCount')));
+    });
+
+    let likedSet = new Set<number>();
+    if (req.user && commentIds.length > 0) {
+      const likedRows = await CommentLike.findAll({
+        attributes: ['commentId'],
+        where: { commentId: commentIds, userId: req.user.id },
+      });
+      likedSet = new Set(likedRows.map((row) => Number(row.commentId)));
+    }
+
+    const commentsWithMeta = comments.rows.map((comment) =>
+      attachCommentMeta(comment, likeMap, likedSet)
+    );
+
     res.status(200).json({
-      comments: comments.rows,
+      comments: commentsWithMeta,
       pagination: getPaginationMeta(comments.count, pageNumber, limitNumber),
     });
   } catch (error) {
@@ -194,6 +249,24 @@ export const createComment = async (req: AuthenticatedRequest, res: Response): P
         comment: comment.toJSON(),
       });
     }
+
+    if (post.authorId !== req.user.id) {
+      await createNotification({
+        userId: post.authorId,
+        type: 'comment_created',
+        title: 'Novo comentário no seu post',
+        message: 'Um comentário foi enviado e aguarda moderação.',
+        metadata: { postId: post.id, commentId: comment.id },
+      });
+    }
+
+    await createNotification({
+      userId: req.user.id,
+      type: 'comment_pending',
+      title: 'Comentário enviado',
+      message: 'Seu comentário foi enviado para avaliação da moderação.',
+      metadata: { postId: post.id, commentId: comment.id },
+    });
 
     res.status(201).json({
       message: 'Comment created successfully',
@@ -346,6 +419,14 @@ export const approveComment = async (req: AuthenticatedRequest, res: Response): 
       });
     }
 
+    await createNotification({
+      userId: comment.authorId,
+      type: 'comment_moderated',
+      title: 'Comentário aprovado',
+      message: 'Seu comentário foi aprovado pela moderação.',
+      metadata: { postId: comment.postId, commentId: comment.id },
+    });
+
     res.status(200).json({
       message: 'Comment approved successfully',
       comment,
@@ -400,6 +481,14 @@ export const rejectComment = async (req: AuthenticatedRequest, res: Response): P
       });
     }
 
+    await createNotification({
+      userId: comment.authorId,
+      type: 'comment_moderated',
+      title: 'Comentário reprovado',
+      message: 'Seu comentário foi reprovado pela moderação.',
+      metadata: { postId: comment.postId, commentId: comment.id },
+    });
+
     res.status(200).json({
       message: 'Comment rejected successfully',
       comment,
@@ -431,22 +520,44 @@ export const flagComment = async (req: AuthenticatedRequest, res: Response): Pro
       return;
     }
 
-    if (comment.flaggedBy === req.user.id && comment.status === 'flagged') {
-      res.status(409).json({ error: 'Comment already flagged by this user' });
+    const existingReport = await CommentReport.findOne({
+      where: { userId: req.user.id, commentId: comment.id },
+    });
+
+    if (existingReport) {
+      res.status(409).json({ error: 'Comentário já denunciado por você' });
       return;
     }
 
-    const nextStatus: CommentStatus = comment.status === 'rejected' ? 'rejected' : 'flagged';
-    const moderationNotes = reason
-      ? [comment.moderationNotes, `Flag reason: ${reason}`].filter(Boolean).join('\n')
-      : comment.moderationNotes;
-
-    await comment.update({
-      status: nextStatus,
-      flaggedBy: req.user.id,
-      flaggedAt: new Date(),
-      moderationNotes: moderationNotes ?? null,
+    await CommentReport.create({
+      userId: req.user.id,
+      commentId: comment.id,
+      reason: reason ?? null,
     });
+
+    const reportCount = await CommentReport.count({
+      where: { commentId: comment.id },
+    });
+
+    if (reportCount >= REPORT_THRESHOLD && comment.status !== 'rejected') {
+      const moderationNotes = reason
+        ? [comment.moderationNotes, `Motivo da denúncia: ${reason}`].filter(Boolean).join('\n')
+        : comment.moderationNotes;
+
+      await comment.update({
+        status: 'flagged',
+        flaggedBy: req.user.id,
+        flaggedAt: new Date(),
+        moderationNotes: moderationNotes ?? null,
+      });
+
+      await notifyModerators({
+        type: 'comment_flagged',
+        title: 'Comentário denunciado',
+        message: 'Um comentário atingiu o limite de denúncias.',
+        metadata: { commentId: comment.id, postId: comment.postId, reports: reportCount },
+      });
+    }
 
     await comment.reload({
       include: [
@@ -467,11 +578,49 @@ export const flagComment = async (req: AuthenticatedRequest, res: Response): Pro
     }
 
     res.status(200).json({
-      message: 'Comment flagged for review',
+      message: 'Denúncia registrada. A moderação será avisada se atingir o limite.',
       comment,
+      reportCount,
     });
   } catch (error) {
     console.error('Flag comment error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const toggleCommentLike = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'User not authenticated' });
+      return;
+    }
+
+    const { id } = req.params;
+    const comment = await Comment.findByPk(Number(id));
+    if (!comment) {
+      res.status(404).json({ error: 'Comment not found' });
+      return;
+    }
+
+    const existing = await CommentLike.findOne({
+      where: { userId: req.user.id, commentId: comment.id },
+    });
+
+    if (existing) {
+      await existing.destroy();
+    } else {
+      await CommentLike.create({ userId: req.user.id, commentId: comment.id });
+    }
+
+    const likeCount = await CommentLike.count({ where: { commentId: comment.id } });
+
+    res.status(200).json({
+      message: 'Comment like toggled',
+      liked: !existing,
+      likeCount,
+    });
+  } catch (error) {
+    console.error('Toggle comment like error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -522,6 +671,35 @@ export const getModerationQueue = async (req: AuthenticatedRequest, res: Respons
     });
   } catch (error) {
     console.error('Get moderation queue error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getReportedComments = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const reports = await CommentReport.findAll({
+      attributes: [
+        'commentId',
+        [sequelize.fn('COUNT', sequelize.col('CommentReport.id')), 'reportCount'],
+      ],
+      include: [
+        {
+          model: Comment,
+          as: 'comment',
+          attributes: ['id', 'content', 'status', 'postId', 'authorId', 'createdAt'],
+          include: [
+            { model: User, as: 'author', attributes: ['id', 'username', 'avatar'] },
+            { model: Post, as: 'post', attributes: ['id', 'title'] },
+          ],
+        },
+      ],
+      group: ['CommentReport.commentId', 'comment.id', 'comment->author.id', 'comment->post.id'],
+      order: [[sequelize.literal('COUNT("CommentReport"."id")'), 'DESC']],
+    });
+
+    res.status(200).json({ reports });
+  } catch (error) {
+    console.error('Get reported comments error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

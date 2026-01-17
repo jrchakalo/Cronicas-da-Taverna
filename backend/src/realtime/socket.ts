@@ -22,6 +22,11 @@ interface CommentRealtimePayload {
     comment: unknown;
 }
 
+interface NotificationRealtimePayload {
+  notification: unknown;
+  userId: number;
+}
+
 interface ServerToClientEvents {
   'realtime:connected': (payload: { user?: SocketUser }) => void;
   'post:created': (payload: PostRealtimePayload) => void;
@@ -36,6 +41,7 @@ interface ServerToClientEvents {
     actorId: number;
     action: 'approved' | 'rejected' | 'flagged';
   }) => void;
+  'notification:created': (payload: NotificationRealtimePayload) => void;
 }
 
 type InterServerEvents = Record<string, never>;

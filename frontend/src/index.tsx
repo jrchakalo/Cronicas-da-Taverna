@@ -1,12 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
 import 'react-toastify/dist/ReactToastify.css';
 
 import App from './App';
-import { theme } from './styles/theme';
 import { AuthProvider } from './hooks/useAuth';
+import { ThemeModeProvider } from './hooks/useThemeMode';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -15,13 +14,13 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
+    <ThemeModeProvider>
       <Router>
         <AuthProvider>
           <App />
         </AuthProvider>
       </Router>
-    </ThemeProvider>
+    </ThemeModeProvider>
   </React.StrictMode>
 );
 
