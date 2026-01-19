@@ -4,6 +4,9 @@
 
 Blog fullstack com autenticação, posts em markdown, comentários com moderação, likes e atualizações em tempo real. Backend em Node.js/Express + PostgreSQL + Socket.IO + S3, frontend em React.
 
+## 🌐 Deploy
+Acesse a aplicação em produção: [https://cronicas-da-taverna.vercel.app/](https://cronicas-da-taverna.vercel.app/)
+
 ## ✅ Funcionalidades
 - Autenticação JWT (login/registro)
 - Feed de posts com tags e contadores
