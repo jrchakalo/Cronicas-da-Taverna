@@ -21,6 +21,7 @@ interface NotificationAttributes {
   updatedAt?: Date;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface NotificationCreationAttributes
   extends Optional<NotificationAttributes, 'id' | 'isRead' | 'metadata'> {}
 

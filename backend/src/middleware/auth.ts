@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest, UserRole } from '../types';
 import { User } from '../models';
 import { verifyToken } from '../utils/jwt';
@@ -65,7 +65,7 @@ export const optionalAuth = async (
         role: user.role,
       };
     }
-  } catch (error) {
+  } catch {
     // Silently fail for optional auth
   }
 

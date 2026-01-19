@@ -13,6 +13,7 @@ interface LikeAttributes {
   updatedAt?: Date;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface LikeCreationAttributes extends Optional<LikeAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 class Like extends Model<LikeAttributes, LikeCreationAttributes> implements LikeAttributes {

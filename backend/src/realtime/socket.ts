@@ -12,6 +12,7 @@ interface SocketUser {
   role: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ClientToServerEvents {}
 
 interface PostRealtimePayload {
@@ -112,7 +113,7 @@ export const initSocket = (
       };
 
       next();
-    } catch (error) {
+    } catch {
       next(new Error('AUTHENTICATION_ERROR'));
     }
   });

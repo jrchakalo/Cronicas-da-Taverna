@@ -24,6 +24,7 @@ interface PostAttributes {
   updatedAt?: Date;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface PostCreationAttributes extends Optional<PostAttributes, 'id' | 'isPublished' | 'viewCount' | 'createdAt' | 'updatedAt'> {}
 
 class Post extends Model<PostAttributes, PostCreationAttributes> implements PostAttributes {

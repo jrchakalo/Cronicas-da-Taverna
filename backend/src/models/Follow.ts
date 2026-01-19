@@ -9,6 +9,7 @@ interface FollowAttributes {
   updatedAt?: Date;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface FollowCreationAttributes extends Optional<FollowAttributes, 'id'> {}
 
 class Follow extends Model<FollowAttributes, FollowCreationAttributes> implements FollowAttributes {

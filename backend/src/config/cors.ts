@@ -18,7 +18,7 @@ const sanitizeOrigins = (value: string | undefined): string[] => {
       try {
         new URL(item);
         return true;
-      } catch (error) {
+      } catch {
         console.warn(`🚨 Origem ignorada por formato inválido: ${item}`);
         return false;
       }

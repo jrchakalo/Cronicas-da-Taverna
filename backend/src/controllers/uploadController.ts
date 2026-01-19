@@ -1,15 +1,7 @@
 import { Response } from 'express';
 import multer from 'multer';
-import AWS from 'aws-sdk';
 import { AuthenticatedRequest } from '../types';
 import { uploadToS3, deleteFromS3 } from '../utils/s3';
-
-// Configure AWS S3
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION || 'us-east-1',
-});
 
 // Multer configuration for memory storage
 const memoryStorage = multer.memoryStorage();

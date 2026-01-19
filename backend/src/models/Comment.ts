@@ -24,6 +24,7 @@ interface CommentAttributes {
   updatedAt?: Date;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface CommentCreationAttributes extends Optional<CommentAttributes, 'id' | 'status' | 'moderatedBy' | 'moderatedAt' | 'moderationNotes' | 'flaggedBy' | 'flaggedAt' | 'createdAt' | 'updatedAt'> {}
 
 class Comment extends Model<CommentAttributes, CommentCreationAttributes> implements CommentAttributes {

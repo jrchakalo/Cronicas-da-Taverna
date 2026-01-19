@@ -10,6 +10,7 @@ interface PostReportAttributes {
   updatedAt?: Date;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface PostReportCreationAttributes extends Optional<PostReportAttributes, 'id' | 'reason'> {}
 
 class PostReport extends Model<PostReportAttributes, PostReportCreationAttributes>

@@ -28,6 +28,7 @@ interface UserAttributes {
   updatedAt?: Date;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'isActive' | 'role' | 'createdAt' | 'updatedAt'> {}
 
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {

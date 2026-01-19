@@ -9,6 +9,7 @@ interface CommentLikeAttributes {
   updatedAt?: Date;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface CommentLikeCreationAttributes extends Optional<CommentLikeAttributes, 'id'> {}
 
 class CommentLike extends Model<CommentLikeAttributes, CommentLikeCreationAttributes>

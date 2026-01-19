@@ -10,6 +10,7 @@ interface CommentReportAttributes {
   updatedAt?: Date;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface CommentReportCreationAttributes extends Optional<CommentReportAttributes, 'id' | 'reason'> {}
 
 class CommentReport extends Model<CommentReportAttributes, CommentReportCreationAttributes>
