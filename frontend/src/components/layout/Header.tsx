@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { useAuth } from '../../hooks/useAuth';
 import { ThemeMode, useThemeMode } from '../../hooks/useThemeMode';
 import { useNotifications } from '../../hooks/useNotifications';
+import api from '../../services/api';
 
 const HeaderContainer = styled.header<{ $mode: ThemeMode }>`
   ${({ $mode }) =>
@@ -438,6 +439,18 @@ export const Header: React.FC = () => {
   const canModerate = user?.role === 'moderator' || user?.role === 'admin';
   const navigate = useNavigate();
 
+  // TEMPORARY: Promote to moderator
+  const handlePromoteToModerator = async () => {
+    try {
+      await api.post('/users/promote-me');
+      alert('Você agora é moderador! Recarregue a página.');
+      window.location.reload();
+    } catch (error) {
+      alert('Erro ao promover usuário');
+      console.error(error);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     setIsMenuOpen(false);
@@ -729,6 +742,13 @@ export const Header: React.FC = () => {
                 </svg>
               )}
             </ThemeToggle>
+
+            {/* TEMPORARY: Promote to moderator button */}
+            {isAuthenticated && !canModerate && (
+              <ActionButton type="button" onClick={handlePromoteToModerator}>
+                🛡️ Moderador
+              </ActionButton>
+            )}
           </NavActions>
         </NavGroup>
       </HeaderContent>
