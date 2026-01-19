@@ -69,6 +69,19 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log('✅ Database connection established successfully');
     
+    // Run migrations automatically in production (for free plans without pre-deploy hooks)
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🔄 Running database migrations...');
+      const { execSync } = require('child_process');
+      try {
+        execSync('npm run migrate', { stdio: 'inherit' });
+        console.log('✅ Migrations completed successfully');
+      } catch (migrationError) {
+        console.error('⚠️ Migration error (non-fatal):', migrationError);
+        // Continue anyway - migrations might already be applied
+      }
+    }
+    
     if (process.env.NODE_ENV !== 'production') {
       await sequelize.sync({ alter: true });
       console.log('📊 Database synchronized');
