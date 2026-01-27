@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { Post, User } from '../models';
-import { AuthenticatedRequest } from '../types';
 
 export const getUserById = async (req: Request, res: Response): Promise<void> => {
   try {

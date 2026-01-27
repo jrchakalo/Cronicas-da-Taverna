@@ -2,6 +2,21 @@
   <img align="center" alt="Crônicas da Taverna Logo" height="500" width="500" src="./frontend/public/cotlogo.png" />
 </div>
 
+<div align="center">
+
+![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=flat&logo=node.js)
+![Express](https://img.shields.io/badge/Express-4-000000?style=flat&logo=express)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat&logo=postgresql)
+![Socket.IO](https://img.shields.io/badge/Socket.IO-4-010101?style=flat&logo=socket.io)
+![AWS S3](https://img.shields.io/badge/AWS_S3-Storage-FF9900?style=flat&logo=amazon-aws)
+![Sequelize](https://img.shields.io/badge/Sequelize-6-52B0E7?style=flat&logo=sequelize)
+![Styled Components](https://img.shields.io/badge/Styled_Components-6-DB7093?style=flat&logo=styled-components)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker)
+
+</div>
+
 Blog fullstack com autenticação, posts em markdown, comentários com moderação, likes e atualizações em tempo real. Backend em Node.js/Express + PostgreSQL + Socket.IO + S3, frontend em React.
 
 ## 🌐 Deploy
@@ -82,3 +97,7 @@ O pipeline de CI roda lint, testes e build em backend e frontend via GitHub Acti
 
 ## Autor
 [<img src="https://avatars.githubusercontent.com/jrchakalo?v=4" width=115><br><sub>Júnior Silva</sub>](https://github.com/jrchakalo)
+
+## 📄 Licença
+
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
